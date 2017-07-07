@@ -1,36 +1,67 @@
 #include <QTreeView>
 #include <QStandardItemModel>
-#include <QStandardItem>
+#include <QItemSelectionModel>
 #include "mainwindow.h"
 
-
-const int ROWS = 2;
-const int COLUMNS = 3;
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     treeView = new QTreeView(this);
     setCentralWidget(treeView);
-    standardModel = new QStandardItemModel ;
+    standardModel = new QStandardItemModel;
 
-    QList<QStandardItem*> preparedRow =prepareRow("first", "second", "third");
-    QStandardItem* item = standardModel->invisibleRootItem();
-    item->appendRow(preparedRow);
+    QStandardItem* rootNode = standardModel->invisibleRootItem();
 
-    QList<QStandardItem*> secondRow =prepareRow("111", "222", "333");
+    QStandardItem* americaItem = new QStandardItem("America");
+    QStandardItem* mexicoItem =  new QStandardItem("Canada");
+    QStandardItem* usaItem =     new QStandardItem("USA");
+    QStandardItem* bostonItem =  new QStandardItem("Boston");
+    QStandardItem* europeItem =  new QStandardItem("Europe");
+    QStandardItem* italyItem =   new QStandardItem("Italy");
+    QStandardItem* romeItem =    new QStandardItem("Rome");
+    QStandardItem* veronaItem =  new QStandardItem("Verona");
 
-    preparedRow.first()->appendRow(secondRow);
+    rootNode->appendRow(americaItem);
+    rootNode->appendRow(europeItem);
+
+    americaItem->appendRow(mexicoItem);
+    americaItem->appendRow(usaItem);
+
+    usaItem->appendRow(bostonItem);
+
+    europeItem->  appendRow(italyItem);
+
+    italyItem->   appendRow(romeItem);
+    italyItem->   appendRow(veronaItem);
 
     treeView->setModel(standardModel);
     treeView->expandAll();
+
+    QItemSelectionModel* selectionModel = treeView->selectionModel();
+
+    connect(selectionModel, SIGNAL(selectionChanged(const QItemSelection& ,const QItemSelection&)),
+            this, SLOT(selectionChangedSlot(const QItemSelection&, const QItemSelection&)));
 }
 
-QList<QStandardItem*> MainWindow::prepareRow(const QString& first, const QString& second, const QString& third)
+void MainWindow::selectionChangedSlot(const QItemSelection&, const QItemSelection&) // new selection, old selection
 {
-    QList<QStandardItem*> rowItems;
-    rowItems << new QStandardItem(first);
-    rowItems << new QStandardItem(second);
-    rowItems << new QStandardItem(third);
-    return rowItems;
+    const QModelIndex index = treeView->selectionModel()->currentIndex();
+    QString selectedText = index.data(Qt::DisplayRole).toString(); // text of the selected item
+
+    int hierarchyLevel = 1;
+    QModelIndex seekRoot = index;
+
+    // Top level items do not have parents and..
+    // ..the parent() method will return a default constructed QModelIndex()
+
+    while(seekRoot.parent() != QModelIndex()) {
+        seekRoot = seekRoot.parent();
+        hierarchyLevel++;
+    }
+
+    QString showString = QString("%1, Level %2").arg(selectedText).arg(hierarchyLevel);
+    setWindowTitle(showString);
 }
+
+

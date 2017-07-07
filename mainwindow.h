@@ -1,9 +1,11 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
 #include <QMainWindow>
 
-// forward declarations
-class QTreeView;
+class QTreeView; //forward declarations
 class QStandardItemModel;
-class QStandardItem;
+class QItemSelection;
 
 class MainWindow : public QMainWindow
 {
@@ -11,7 +13,10 @@ class MainWindow : public QMainWindow
 private:
     QTreeView* treeView;
     QStandardItemModel* standardModel;
-    QList<QStandardItem *> prepareRow( const QString& first, const QString& second, const QString& third );
+private slots:
+    void selectionChangedSlot(const QItemSelection& newSelection, const QItemSelection& oldSelection);
 public:
     MainWindow(QWidget* parent = nullptr);
 };
+
+#endif // MAINWINDOW_H
